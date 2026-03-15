@@ -1,12 +1,11 @@
 <?php
 
-namespace ApiDoc\Laravel;
+namespace Spectra\Laravel;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
-class ApiDocMiddleware
+class SpectraMiddleware
 {
     private string $endpoint;
     private array $ignore;

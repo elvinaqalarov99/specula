@@ -8,17 +8,17 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/unicorn/apidoc/inference"
-	"github.com/unicorn/apidoc/proxy"
-	"github.com/unicorn/apidoc/server"
+	"github.com/unicorn/spectra/inference"
+	"github.com/unicorn/spectra/proxy"
+	"github.com/unicorn/spectra/server"
 )
 
 const banner = `
-  ____  ____  ____  ____  ____  ___
- / __ |/ __ \/ _  |/ __ \/ __ \/ __\
-/ /_/ / /_/ / // // /_/ / // // /__
-\__,_/ .___/____/\__,_/____/\____/
-    /_/  API Docs that can't lie.
+  ____                 __
+ / __/__  ___ ____/  /________ _
+_\ \/ _ \/ -_) __/ __/ __/ _ '/
+/___/ .__/\__/\__/\__/_/  \_,_/
+   /_/  API Docs that can't lie.
 `
 
 func main() {
@@ -86,7 +86,7 @@ func cmdStart(args []string) {
 
 func cmdExport(args []string) {
 	fs := flag.NewFlagSet("export", flag.ExitOnError)
-	addr := fs.String("from", "http://localhost:7878", "running apidoc server")
+	addr := fs.String("from", "http://localhost:7878", "running spectra server")
 	out := fs.String("out", "openapi.json", "output file")
 	fs.Parse(args)
 
@@ -118,7 +118,7 @@ func cmdExport(args []string) {
 func cmdDiff(args []string) {
 	fs := flag.NewFlagSet("diff", flag.ExitOnError)
 	committed := fs.String("committed", "openapi.json", "committed spec file")
-	live := fs.String("live", "http://localhost:7878", "running apidoc server")
+	live := fs.String("live", "http://localhost:7878", "running spectra server")
 	fs.Parse(args)
 
 	// Load committed spec
@@ -177,7 +177,7 @@ func diffSpecs(committed, live map[string]interface{}) []string {
 func printUsage() {
 	fmt.Print(banner)
 	fmt.Println(`
-Usage: apidoc <command> [flags]
+Usage: spectra <command> [flags]
 
 Commands:
   start    Start the proxy and docs server
@@ -185,8 +185,8 @@ Commands:
   diff     Compare a committed spec against the live one
 
 Examples:
-  apidoc start --target http://localhost:3000 --proxy :9999 --ui :7878
-  apidoc export --out openapi.json
-  apidoc diff --committed openapi.json --live http://localhost:7878
+  spectra start --target http://localhost:3000 --proxy :9999 --ui :7878
+  spectra export --out openapi.json
+  spectra diff --committed openapi.json --live http://localhost:7878
 `)
 }

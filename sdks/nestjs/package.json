@@ -1,9 +1,9 @@
 {
-  "name": "@apidoc/nestjs",
+  "name": "@spectra/nestjs",
   "version": "0.1.0",
   "description": "Zero-config NestJS middleware that auto-generates live API docs",
-  "main": "dist/apidoc.middleware.js",
-  "types": "dist/apidoc.middleware.d.ts",
+  "main": "dist/spectra.middleware.js",
+  "types": "dist/spectra.middleware.d.ts",
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
@@ -17,6 +17,6 @@
     "@types/express": "^4.17.21",
     "typescript": "^5.0.0"
   },
-  "keywords": ["nestjs", "openapi", "swagger", "api-docs", "apidoc"],
+  "keywords": ["nestjs", "openapi", "swagger", "api-docs", "spectra"],
   "license": "MIT"
 }

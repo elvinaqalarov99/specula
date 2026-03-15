@@ -1,8 +1,8 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
-export interface ApiDocOptions {
-  /** URL of the running apidoc server (default: http://localhost:7878) */
+export interface SpectraOptions {
+  /** URL of the running Spectra server (default: http://localhost:7878) */
   endpoint?: string;
   /** Paths to ignore, e.g. ['/health', '/metrics'] */
   ignore?: string[];
@@ -10,18 +10,18 @@ export interface ApiDocOptions {
   captureBodies?: boolean;
 }
 
-const DEFAULT_OPTIONS: Required<ApiDocOptions> = {
+const DEFAULT_OPTIONS: Required<SpectraOptions> = {
   endpoint: 'http://localhost:7878',
   ignore: ['/health', '/metrics', '/favicon.ico'],
   captureBodies: true,
 };
 
 @Injectable()
-export class ApiDocMiddleware implements NestMiddleware {
-  private options: Required<ApiDocOptions>;
+export class SpectraMiddleware implements NestMiddleware {
+  private options: Required<SpectraOptions>;
   private ingestUrl: string;
 
-  constructor(options: ApiDocOptions = {}) {
+  constructor(options: SpectraOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
     this.ingestUrl = `${this.options.endpoint}/ingest`;
   }
@@ -34,8 +34,6 @@ export class ApiDocMiddleware implements NestMiddleware {
 
     const startedAt = Date.now();
     const chunks: Buffer[] = [];
-
-    // Capture request body
     const originalBody = req.body;
 
     // Wrap res.write / res.end to capture response body
@@ -98,12 +96,12 @@ export class ApiDocMiddleware implements NestMiddleware {
  *
  * @example
  * // main.ts
- * import { ApiDocModule } from '@apidoc/nestjs';
- * app.use(ApiDocModule.middleware({ endpoint: 'http://localhost:7878' }));
+ * import { SpectraModule } from '@spectra/nestjs';
+ * app.use(SpectraModule.middleware({ endpoint: 'http://localhost:7878' }));
  */
-export const ApiDocModule = {
-  middleware(options?: ApiDocOptions) {
-    const mw = new ApiDocMiddleware(options);
+export const SpectraModule = {
+  middleware(options?: SpectraOptions) {
+    const mw = new SpectraMiddleware(options);
     return mw.use.bind(mw);
   },
 };

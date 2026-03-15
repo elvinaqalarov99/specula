@@ -1,13 +1,13 @@
 {
-  "name": "apidoc/laravel",
+  "name": "spectra/laravel",
   "description": "Zero-config Laravel middleware that auto-generates live API docs",
   "type": "library",
   "license": "MIT",
-  "keywords": ["laravel", "openapi", "swagger", "api-docs", "apidoc"],
+  "keywords": ["laravel", "openapi", "swagger", "api-docs", "spectra"],
   "authors": [
     {
       "name": "Unicorn",
-      "homepage": "https://github.com/unicorn/apidoc"
+      "homepage": "https://github.com/unicorn/spectra"
     }
   ],
   "require": {
@@ -16,13 +16,13 @@
   },
   "autoload": {
     "psr-4": {
-      "ApiDoc\\Laravel\\": "src/"
+      "Spectra\\Laravel\\": "src/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "ApiDoc\\Laravel\\ApiDocServiceProvider"
+        "Spectra\\Laravel\\SpectraServiceProvider"
       ]
     }
   },

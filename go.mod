@@ -1,3 +1,3 @@
-module github.com/unicorn/apidoc
+module github.com/unicorn/spectra
 
 go 1.25.6

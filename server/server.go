@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/unicorn/apidoc/inference"
+	"github.com/unicorn/spectra/inference"
 )
 
 // Server exposes the live spec over HTTP and pushes updates over WebSocket
@@ -89,7 +89,7 @@ func (s *Server) NotifyUpdate(obs *inference.Observation) {
 
 func (s *Server) Listen(addr string) error {
 	go s.hub.run()
-	log.Printf("apidoc server listening on %s", addr)
+	log.Printf("spectra server listening on %s", addr)
 	return http.ListenAndServe(addr, s)
 }
 

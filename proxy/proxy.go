@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/unicorn/apidoc/inference"
+	"github.com/unicorn/spectra/inference"
 )
 
 // Proxy is a transparent HTTP proxy that captures traffic and feeds it to the merger

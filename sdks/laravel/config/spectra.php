@@ -3,18 +3,18 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Enable ApiDoc observation
+    | Enable Spectra observation
     |--------------------------------------------------------------------------
     | Set to false in production if you only want docs in local/staging.
     */
-    'enabled' => env('APIDOC_ENABLED', true),
+    'enabled' => env('SPECTRA_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------
-    | ApiDoc server endpoint
+    | Spectra server endpoint
     |--------------------------------------------------------------------------
     */
-    'endpoint' => env('APIDOC_ENDPOINT', 'http://localhost:7878'),
+    'endpoint' => env('SPECTRA_ENDPOINT', 'http://localhost:7878'),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,5 +34,5 @@ return [
     | Capture request/response bodies
     |--------------------------------------------------------------------------
     */
-    'capture_bodies' => env('APIDOC_CAPTURE_BODIES', true),
+    'capture_bodies' => env('SPECTRA_CAPTURE_BODIES', true),
 ];
