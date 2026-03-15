@@ -35,6 +35,10 @@ ws.onmessage = (evt) => {
   if (msg.event === 'spec_update') {
     ui.specActions.updateSpec(JSON.stringify(msg.spec));
   }
+  if (msg.event === 'spec_reset') {
+    ui.specActions.updateSpec(JSON.stringify(msg.spec));
+    console.log('[Specula] spec cleared');
+  }
 };
 ws.onclose = () => { setTimeout(() => location.reload(), 2000); };
 </script>

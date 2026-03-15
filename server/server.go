@@ -28,8 +28,9 @@ func New(merger *inference.SpecMerger) *Server {
 }
 
 func (s *Server) routes() {
-	s.mux.HandleFunc("/spec", s.handleSpec)
+	s.mux.HandleFunc("/spec", s.handleSpec)       // GET → fetch, DELETE → reset
 	s.mux.HandleFunc("/spec.yaml", s.handleSpecYAML)
+	s.mux.HandleFunc("/spec/reset", s.handleReset) // POST /spec/reset (explicit)
 	s.mux.HandleFunc("/ws", s.handleWS)
 	s.mux.HandleFunc("/ingest", s.handleIngest)
 	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -56,9 +57,31 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSpec(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet, "":
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(s.merger.Spec())
+	case http.MethodDelete:
+		s.handleReset(w, r)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handleReset(w http.ResponseWriter, r *http.Request) {
+	s.merger.Reset()
+	log.Println("spec reset — all observations cleared")
+
+	// Notify all connected UI clients so Swagger UI clears instantly
+	data, _ := json.Marshal(map[string]interface{}{
+		"event": "spec_reset",
+		"spec":  s.merger.Spec(),
+	})
+	s.hub.broadcast(data)
+
 	w.Header().Set("Content-Type", "application/json")
-	spec := s.merger.Spec()
-	json.NewEncoder(w).Encode(spec)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "reset"})
 }
 
 func (s *Server) handleSpecYAML(w http.ResponseWriter, r *http.Request) {

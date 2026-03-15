@@ -35,6 +35,8 @@ func main() {
 		cmdExport(os.Args[2:])
 	case "diff":
 		cmdDiff(os.Args[2:])
+	case "reset":
+		cmdReset(os.Args[2:])
 	case "help", "--help", "-h":
 		printUsage()
 	default:
@@ -174,6 +176,31 @@ func diffSpecs(committed, live map[string]interface{}) []string {
 	return diffs
 }
 
+// ---- reset ----
+
+func cmdReset(args []string) {
+	fs := flag.NewFlagSet("reset", flag.ExitOnError)
+	addr := fs.String("from", "http://localhost:7878", "running specula server")
+	fs.Parse(args)
+
+	req, err := http.NewRequest(http.MethodDelete, *addr+"/spec", nil)
+	if err != nil {
+		log.Fatalf("failed to build request: %v", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatalf("cannot reach server: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("✓ Spec cleared — all observations reset.")
+	} else {
+		fmt.Fprintf(os.Stderr, "✗ Server returned %d\n", resp.StatusCode)
+		os.Exit(1)
+	}
+}
+
 func printUsage() {
 	fmt.Print(banner)
 	fmt.Print(`
@@ -183,10 +210,12 @@ Commands:
   start    Start the proxy and docs server
   export   Export the current spec to a file
   diff     Compare a committed spec against the live one
+  reset    Clear all observations and start fresh
 
 Examples:
   specula start --target http://localhost:3000 --proxy :9999 --ui :7878
   specula export --out openapi.json
   specula diff --committed openapi.json --live http://localhost:7878
+  specula reset
 `)
 }

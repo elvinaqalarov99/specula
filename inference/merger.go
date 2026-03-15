@@ -171,6 +171,19 @@ func (m *SpecMerger) Ingest(obs *Observation) {
 	op.Responses[statusKey] = existing
 }
 
+// Reset clears all observed paths and schemas, starting fresh.
+func (m *SpecMerger) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	title := m.spec.Info.Title
+	m.spec = &OpenAPISpec{
+		OpenAPI: "3.0.3",
+		Info:    Info{Title: title, Version: "0.0.0"},
+		Paths:   map[string]PathItem{},
+	}
+	m.normalizer = NewPathNormalizer()
+}
+
 // Spec returns a snapshot of the current OpenAPI spec
 func (m *SpecMerger) Spec() *OpenAPISpec {
 	m.mu.RLock()
