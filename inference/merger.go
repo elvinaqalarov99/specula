@@ -157,9 +157,11 @@ func (m *SpecMerger) Ingest(obs *Observation) {
 		}
 	}
 
-	if len(obs.ResponseBody) > 0 {
+	// 204 No Content and 304 Not Modified never have a body
+	if obs.StatusCode != 204 && obs.StatusCode != 304 && len(obs.ResponseBody) > 0 {
 		schema, err := InferSchemaFromBytes(obs.ResponseBody)
 		if err == nil && schema != nil {
+			schema = unwrapPaginatedResponse(schema)
 			ct := "application/json"
 			prev := existing.Content[ct]
 			merged := MergeSchemas(prev.Schema, schema)
@@ -226,20 +228,50 @@ func mergeQueryParam(op *Operation, name, value string) {
 
 func inferTags(path string) []string {
 	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) > 0 && parts[0] != "" {
-		// strip leading "api" or version prefix
-		tag := parts[0]
-		if tag == "api" && len(parts) > 1 {
-			tag = parts[1]
+	// Walk past common non-semantic prefixes: api, v1, v2, user, admin
+	skipPrefixes := map[string]bool{"api": true, "user": true, "admin": true, "v1": true, "v2": true, "v3": true}
+	for i, p := range parts {
+		if p == "" {
+			continue
 		}
-		if strings.HasPrefix(tag, "v") && len(tag) <= 3 {
-			if len(parts) > 1 {
-				tag = parts[1]
-			}
+		isVersion := strings.HasPrefix(p, "v") && len(p) <= 3
+		if skipPrefixes[p] || isVersion {
+			continue
 		}
-		return []string{tag}
+		// First meaningful segment becomes the tag
+		_ = i
+		return []string{strings.ReplaceAll(p, "-", "_")}
 	}
 	return []string{"default"}
+}
+
+// unwrapPaginatedResponse detects Laravel-style paginated responses
+// { "data": [...], "meta": {...}, "links": {...} }
+// and returns the schema of the items inside "data" as an array.
+func unwrapPaginatedResponse(schema *JSONSchemaType) *JSONSchemaType {
+	if schema == nil || schema.Type != "object" || schema.Properties == nil {
+		return schema
+	}
+	_, hasData := schema.Properties["data"]
+	_, hasMeta := schema.Properties["meta"]
+	_, hasLinks := schema.Properties["links"]
+
+	if !hasData || (!hasMeta && !hasLinks) {
+		return schema
+	}
+
+	// It's a paginated wrapper — annotate clearly in the spec
+	dataSchema := schema.Properties["data"]
+	metaSchema := schema.Properties["meta"]
+
+	return &JSONSchemaType{
+		Type: "object",
+		Properties: map[string]*JSONSchemaType{
+			"data":  dataSchema,
+			"meta":  metaSchema,
+			"links": {Type: "object"},
+		},
+	}
 }
 
 // SortedPaths returns path keys sorted for stable output
