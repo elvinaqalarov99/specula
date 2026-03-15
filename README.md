@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/unicorn/spectra/releases"><img src="https://img.shields.io/github/v/release/unicorn/spectra?color=6366f1&label=release&style=flat-square" alt="Release"/></a>
+  <a href="https://github.com/elvinaqalarov99/spectra/releases"><img src="https://img.shields.io/github/v/release/elvinaqalarov99/spectra?color=6366f1&label=release&style=flat-square" alt="Release"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-10b981?style=flat-square" alt="License"/></a>
-  <a href="https://pkg.go.dev/github.com/unicorn/spectra"><img src="https://img.shields.io/badge/go-reference-06b6d4?style=flat-square" alt="Go Reference"/></a>
+  <a href="https://pkg.go.dev/github.com/elvinaqalarov99/spectra"><img src="https://img.shields.io/badge/go-reference-06b6d4?style=flat-square" alt="Go Reference"/></a>
   <img src="https://img.shields.io/badge/openapi-3.0.3-8b5cf6?style=flat-square" alt="OpenAPI 3.0.3"/>
 </p>
 
@@ -301,7 +301,7 @@ jobs:
 
       - name: Start Spectra proxy
         run: |
-          curl -sSL https://github.com/unicorn/spectra/releases/latest/download/spectra-linux-amd64 -o spectra
+          curl -sSL https://github.com/elvinaqalarov99/spectra/releases/latest/download/spectra-linux-amd64 -o spectra
           chmod +x spectra
           ./spectra start --target http://localhost:3000 --proxy :9999 --ui :7878 &
           sleep 2
@@ -351,4 +351,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Built at Unicorn. Maintained with the philosophy that the best documentation system is one developers never have to think about.*
+*Maintained with the philosophy that the best documentation system is one developers never have to think about.*
