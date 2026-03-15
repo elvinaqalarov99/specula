@@ -1,0 +1,30 @@
+{
+  "name": "apidoc/laravel",
+  "description": "Zero-config Laravel middleware that auto-generates live API docs",
+  "type": "library",
+  "license": "MIT",
+  "keywords": ["laravel", "openapi", "swagger", "api-docs", "apidoc"],
+  "authors": [
+    {
+      "name": "Unicorn",
+      "homepage": "https://github.com/unicorn/apidoc"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "illuminate/support": "^10.0|^11.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ApiDoc\\Laravel\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "ApiDoc\\Laravel\\ApiDocServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "stable"
+}

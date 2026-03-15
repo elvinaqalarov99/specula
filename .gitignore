@@ -1,0 +1,69 @@
+# ── Binaries ──────────────────────────────────────────────────────────────────
+apidoc
+apidoc-*
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# ── Go build artifacts ────────────────────────────────────────────────────────
+*.test
+*.out
+/dist/
+/bin/
+/build/
+
+# ── Go vendor (if not vendoring) ──────────────────────────────────────────────
+/vendor/
+
+# ── Exported specs (runtime output, not source) ───────────────────────────────
+openapi.json
+openapi.yaml
+openapi.yml
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# ── Node (sdks/nestjs, sdks/express) ─────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn/
+dist/
+*.tsbuildinfo
+
+# ── PHP / Composer (sdks/laravel) ─────────────────────────────────────────────
+/sdks/laravel/vendor/
+/sdks/laravel/composer.lock
+
+# ── Editor / IDE ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── OS artifacts ──────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+desktop.ini
+
+# ── Test / coverage ───────────────────────────────────────────────────────────
+coverage.out
+coverage.html
+*.coverprofile
+
+# ── Claude Code local settings ───────────────────────────────────────────────
+.claude/settings.local.json
