@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elvinaqalarov99/spectra/inference"
+	"github.com/elvinaqalarov99/specula/inference"
 )
 
 // Proxy is a transparent HTTP proxy that captures traffic and feeds it to the merger

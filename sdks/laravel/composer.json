@@ -1,9 +1,9 @@
 {
-  "name": "spectra/laravel",
+  "name": "specula/laravel",
   "description": "Zero-config Laravel middleware that auto-generates live API docs",
   "type": "library",
   "license": "MIT",
-  "keywords": ["laravel", "openapi", "swagger", "api-docs", "spectra"],
+  "keywords": ["laravel", "openapi", "swagger", "api-docs", "specula"],
   "authors": [
     {
       "name": "Elvin Agalarov",
@@ -16,19 +16,19 @@
   },
   "autoload": {
     "psr-4": {
-      "Spectra\\Laravel\\": "src/"
+      "Specula\\Laravel\\": "src/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Spectra\\Laravel\\SpectraServiceProvider"
+        "Specula\\Laravel\\SpeculaServiceProvider"
       ]
     }
   },
   "minimum-stability": "stable",
   "support": {
-    "issues": "https://github.com/elvinaqalarov99/spectra-laravel/issues",
-    "source": "https://github.com/elvinaqalarov99/spectra-laravel"
+    "issues": "https://github.com/elvinaqalarov99/specula-laravel/issues",
+    "source": "https://github.com/elvinaqalarov99/specula-laravel"
   }
 }

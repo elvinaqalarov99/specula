@@ -17,19 +17,19 @@ jobs:
         include:
           - goos: linux
             goarch: amd64
-            asset: spectra-linux-amd64
+            asset: specula-linux-amd64
           - goos: linux
             goarch: arm64
-            asset: spectra-linux-arm64
+            asset: specula-linux-arm64
           - goos: darwin
             goarch: amd64
-            asset: spectra-darwin-amd64
+            asset: specula-darwin-amd64
           - goos: darwin
             goarch: arm64
-            asset: spectra-darwin-arm64   # Apple Silicon
+            asset: specula-darwin-arm64   # Apple Silicon
           - goos: windows
             goarch: amd64
-            asset: spectra-windows-amd64.exe
+            asset: specula-windows-amd64.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Spectra ${{ github.ref_name }}
+          name: Specula ${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}  # v1.0.0-beta → prerelease
           generate_release_notes: true

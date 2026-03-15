@@ -1,8 +1,8 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
-export interface SpectraOptions {
-  /** URL of the running Spectra server (default: http://localhost:7878) */
+export interface SpeculaOptions {
+  /** URL of the running Specula server (default: http://localhost:7878) */
   endpoint?: string;
   /** Paths to ignore, e.g. ['/health', '/metrics'] */
   ignore?: string[];
@@ -10,18 +10,18 @@ export interface SpectraOptions {
   captureBodies?: boolean;
 }
 
-const DEFAULT_OPTIONS: Required<SpectraOptions> = {
+const DEFAULT_OPTIONS: Required<SpeculaOptions> = {
   endpoint: 'http://localhost:7878',
   ignore: ['/health', '/metrics', '/favicon.ico'],
   captureBodies: true,
 };
 
 @Injectable()
-export class SpectraMiddleware implements NestMiddleware {
-  private options: Required<SpectraOptions>;
+export class SpeculaMiddleware implements NestMiddleware {
+  private options: Required<SpeculaOptions>;
   private ingestUrl: string;
 
-  constructor(options: SpectraOptions = {}) {
+  constructor(options: SpeculaOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
     this.ingestUrl = `${this.options.endpoint}/ingest`;
   }
@@ -96,12 +96,12 @@ export class SpectraMiddleware implements NestMiddleware {
  *
  * @example
  * // main.ts
- * import { SpectraModule } from '@spectra/nestjs';
- * app.use(SpectraModule.middleware({ endpoint: 'http://localhost:7878' }));
+ * import { SpeculaModule } from '@specula/nestjs';
+ * app.use(SpeculaModule.middleware({ endpoint: 'http://localhost:7878' }));
  */
-export const SpectraModule = {
-  middleware(options?: SpectraOptions) {
-    const mw = new SpectraMiddleware(options);
+export const SpeculaModule = {
+  middleware(options?: SpeculaOptions) {
+    const mw = new SpeculaMiddleware(options);
     return mw.use.bind(mw);
   },
 };

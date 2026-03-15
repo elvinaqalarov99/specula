@@ -3,18 +3,18 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Enable Spectra observation
+    | Enable Specula observation
     |--------------------------------------------------------------------------
     | Set to false in production if you only want docs in local/staging.
     */
-    'enabled' => env('SPECTRA_ENABLED', true),
+    'enabled' => env('SPECULA_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------
-    | Spectra server endpoint
+    | Specula server endpoint
     |--------------------------------------------------------------------------
     */
-    'endpoint' => env('SPECTRA_ENDPOINT', 'http://localhost:7878'),
+    'endpoint' => env('SPECULA_ENDPOINT', 'http://localhost:7878'),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,5 +34,5 @@ return [
     | Capture request/response bodies
     |--------------------------------------------------------------------------
     */
-    'capture_bodies' => env('SPECTRA_CAPTURE_BODIES', true),
+    'capture_bodies' => env('SPECULA_CAPTURE_BODIES', true),
 ];

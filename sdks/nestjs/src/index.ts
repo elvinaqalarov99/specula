@@ -1,1 +1,1 @@
-export { SpectraMiddleware, SpectraModule, SpectraOptions } from './spectra.middleware';
+export { SpeculaMiddleware, SpeculaModule, SpeculaOptions } from './specula.middleware';

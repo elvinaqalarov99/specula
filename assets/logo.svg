@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
   <defs>
-    <!-- Spectrum gradient — the visual identity of Spectra -->
+    <!-- Spectrum gradient — the visual identity of Specula -->
     <linearGradient id="spectrumGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%"   stop-color="#6366f1"/>
       <stop offset="33%"  stop-color="#8b5cf6"/>
@@ -82,7 +82,7 @@
     letter-spacing="-1.5"
     fill="url(#spectrumGrad)"
     filter="url(#textShadow)"
-  >Spectra</text>
+  >Specula</text>
 
   <!-- ── Tagline ─────────────────────────────────────────────────── -->
   <text

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/elvinaqalarov99/spectra/inference"
+	"github.com/elvinaqalarov99/specula/inference"
 )
 
 // Server exposes the live spec over HTTP and pushes updates over WebSocket
@@ -89,7 +89,7 @@ func (s *Server) NotifyUpdate(obs *inference.Observation) {
 
 func (s *Server) Listen(addr string) error {
 	go s.hub.run()
-	log.Printf("spectra server listening on %s", addr)
+	log.Printf("specula server listening on %s", addr)
 	return http.ListenAndServe(addr, s)
 }
 

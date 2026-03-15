@@ -1,11 +1,11 @@
 <?php
 
-namespace Spectra\Laravel;
+namespace Specula\Laravel;
 
 use Closure;
 use Illuminate\Http\Request;
 
-class SpectraMiddleware
+class SpeculaMiddleware
 {
     private string $endpoint;
     private array $ignore;
