@@ -11,14 +11,11 @@ class SpeculaMiddleware
     private array $ignore;
     private bool $captureBodies;
 
-    public function __construct(
-        string $endpoint = 'http://localhost:7878',
-        array  $ignore = ['/health', '/metrics'],
-        bool   $captureBodies = true
-    ) {
-        $this->endpoint      = rtrim($endpoint, '/');
-        $this->ignore        = $ignore;
-        $this->captureBodies = $captureBodies;
+    public function __construct()
+    {
+        $this->endpoint      = rtrim(config('specula.endpoint', 'http://localhost:7878'), '/');
+        $this->ignore        = config('specula.ignore', ['/health', '/metrics', '/_debugbar', '/telescope', '/horizon']);
+        $this->captureBodies = (bool) config('specula.capture_bodies', true);
     }
 
     public function handle(Request $request, Closure $next): mixed
