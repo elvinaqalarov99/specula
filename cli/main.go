@@ -50,37 +50,52 @@ func main() {
 
 func cmdStart(args []string) {
 	fs := flag.NewFlagSet("start", flag.ExitOnError)
-	target := fs.String("target", "http://localhost:3000", "upstream server to proxy to")
+	target := fs.String("target", "", "upstream server to proxy to (proxy mode)")
 	proxyAddr := fs.String("proxy", ":9999", "address for the proxy to listen on")
 	uiAddr := fs.String("ui", ":7878", "address for the docs UI + spec API")
 	title := fs.String("title", "My API", "API title in the generated spec")
+	apiURL := fs.String("api", "", "base URL of your API shown in Swagger UI Execute (SDK mode)")
 	fs.Parse(args)
 
 	fmt.Print(banner)
-	log.Printf("target:  %s", *target)
-	log.Printf("proxy:   http://localhost%s", *proxyAddr)
 	log.Printf("docs:    http://localhost%s/docs/", *uiAddr)
 
 	merger := inference.NewSpecMerger(*title)
+
+	// Determine the server URL for Swagger UI Execute:
+	// --api takes precedence, then --target, then nothing (Execute disabled)
+	serverURL := *apiURL
+	if serverURL == "" {
+		serverURL = *target
+	}
+	if serverURL != "" {
+		merger.SetServer(serverURL)
+		log.Printf("api:     %s  (used by Swagger UI Execute)", serverURL)
+	}
+
 	srv := server.New(merger)
 
-	p, err := proxy.New(*target, merger)
-	if err != nil {
-		log.Fatalf("invalid target URL: %v", err)
-	}
-	p.OnObs = srv.NotifyUpdate
-
-	// Start docs server
+	// Start docs server (always)
 	go func() {
 		if err := srv.Listen(*uiAddr); err != nil {
 			log.Fatalf("docs server: %v", err)
 		}
 	}()
 
-	// Start proxy
-	log.Printf("proxy listening on %s → %s", *proxyAddr, *target)
-	if err := http.ListenAndServe(*proxyAddr, p); err != nil {
-		log.Fatalf("proxy: %v", err)
+	// Start proxy only when --target is provided
+	if *target != "" {
+		p, err := proxy.New(*target, merger)
+		if err != nil {
+			log.Fatalf("invalid target URL: %v", err)
+		}
+		p.OnObs = srv.NotifyUpdate
+		log.Printf("proxy:   http://localhost%s → %s", *proxyAddr, *target)
+		if err := http.ListenAndServe(*proxyAddr, p); err != nil {
+			log.Fatalf("proxy: %v", err)
+		}
+	} else {
+		log.Printf("SDK mode — waiting for observations on /ingest")
+		select {} // block forever
 	}
 }
 
@@ -214,6 +229,7 @@ Commands:
 
 Examples:
   specula start --target http://localhost:3000 --proxy :9999 --ui :7878
+  specula start --api https://api.example.test --ui :7878
   specula export --out openapi.json
   specula diff --committed openapi.json --live http://localhost:7878
   specula reset

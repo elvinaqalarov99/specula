@@ -26,8 +26,14 @@ type Observation struct {
 type OpenAPISpec struct {
 	OpenAPI    string                 `json:"openapi"`
 	Info       Info                  `json:"info"`
+	Servers    []SpecServer          `json:"servers,omitempty"`
 	Paths      map[string]PathItem   `json:"paths"`
 	Components Components            `json:"components,omitempty"`
+}
+
+type SpecServer struct {
+	URL         string `json:"url"`
+	Description string `json:"description,omitempty"`
 }
 
 type Info struct {
@@ -96,6 +102,13 @@ func NewSpecMerger(title string) *SpecMerger {
 		},
 		normalizer: NewPathNormalizer(),
 	}
+}
+
+// SetServer sets the target API server URL shown in the spec (used by Swagger UI Execute).
+func (m *SpecMerger) SetServer(url string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.spec.Servers = []SpecServer{{URL: url, Description: "API server"}}
 }
 
 // Ingest processes a single observation and updates the spec
@@ -204,9 +217,11 @@ func (m *SpecMerger) Reset() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	title := m.spec.Info.Title
+	servers := m.spec.Servers
 	m.spec = &OpenAPISpec{
 		OpenAPI: "3.0.3",
 		Info:    Info{Title: title, Version: "0.0.0"},
+		Servers: servers,
 		Paths:   map[string]PathItem{},
 	}
 	m.normalizer = NewPathNormalizer()
