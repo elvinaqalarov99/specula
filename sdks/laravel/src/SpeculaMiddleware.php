@@ -135,7 +135,17 @@ class SpeculaMiddleware
     private function isJsonResponse(SymfonyResponse $response): bool
     {
         $ct = $response->headers->get('Content-Type', '');
-        return str_contains($ct, 'application/json') || str_contains($ct, 'application/vnd.api+json');
+        if (str_contains($ct, 'application/json') || str_contains($ct, 'application/vnd.api+json')) {
+            return true;
+        }
+        // Some endpoints return JSON without the correct Content-Type header.
+        // Sniff the body: if it starts with { or [ it's JSON.
+        $body = $response->getContent();
+        if (!empty($body)) {
+            $first = ltrim($body)[0] ?? '';
+            return $first === '{' || $first === '[';
+        }
+        return false;
     }
 
     private function isWebhook(Request $request): bool

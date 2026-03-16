@@ -119,9 +119,11 @@ func insertTrie(node *trieNode, segments []string) {
 	insertTrie(child, segments[1:])
 }
 
-// markParams collapses ID-like siblings into {id}.
-// Tokens (hex hashes, etc.) are collapsed even with a single observation.
-// Regular IDs (numeric, UUID) require ≥2 distinct values.
+// markParams collapses dynamic path segments into typed placeholders:
+//   - integers          → {id}    (single observation)
+//   - hex tokens ≥20ch  → {hash}  (single observation — SHA1/MD5/SHA256)
+//   - long slugs ≥10ch  → {id}    (single observation)
+//   - UUIDs             → {id}    (≥2 distinct values)
 func markParams(node *trieNode) {
 	if len(node.children) == 0 {
 		return
@@ -132,45 +134,61 @@ func markParams(node *trieNode) {
 		markParams(child)
 	}
 
-	// Pass 1: collapse tokens immediately — single observation is enough
-	// (hex hashes, SHA1 tokens, etc. are unambiguously dynamic)
-	tokenCandidates := []string{}
+	// Pass 1a: integers → {id} immediately
+	var numCandidates []string
 	for seg := range node.children {
-		if seg != "{id}" && looksLikeToken(seg) {
-			tokenCandidates = append(tokenCandidates, seg)
+		if seg != "{id}" && seg != "{hash}" && reNumeric.MatchString(seg) {
+			numCandidates = append(numCandidates, seg)
 		}
 	}
-	if len(tokenCandidates) > 0 {
-		merged := &trieNode{children: map[string]*trieNode{}}
-		for _, seg := range tokenCandidates {
-			mergeTrieNodes(merged, node.children[seg])
-			delete(node.children, seg)
-		}
-		if existing, ok := node.children["{id}"]; ok {
-			mergeTrieNodes(existing, merged)
-		} else {
-			node.children["{id}"] = merged
-		}
+	if len(numCandidates) > 0 {
+		mergeIntoPlaceholder(node, numCandidates, "{id}")
 	}
 
-	// Pass 2: collapse numeric / UUID IDs when ≥2 distinct values seen
-	paramCandidates := []string{}
+	// Pass 1b: hex tokens → {hash} immediately
+	var hexCandidates []string
 	for seg := range node.children {
-		if seg != "{id}" && looksLikeID(seg) {
-			paramCandidates = append(paramCandidates, seg)
+		if seg != "{id}" && seg != "{hash}" && looksLikeHexToken(seg) {
+			hexCandidates = append(hexCandidates, seg)
 		}
 	}
-	if len(paramCandidates) >= 2 {
-		merged := &trieNode{children: map[string]*trieNode{}}
-		for _, seg := range paramCandidates {
-			mergeTrieNodes(merged, node.children[seg])
-			delete(node.children, seg)
+	if len(hexCandidates) > 0 {
+		mergeIntoPlaceholder(node, hexCandidates, "{hash}")
+	}
+
+	// Pass 1c: long opaque slugs → {id} immediately
+	var slugCandidates []string
+	for seg := range node.children {
+		if seg != "{id}" && seg != "{hash}" && looksLikeSlug(seg) {
+			slugCandidates = append(slugCandidates, seg)
 		}
-		if existing, ok := node.children["{id}"]; ok {
-			mergeTrieNodes(existing, merged)
-		} else {
-			node.children["{id}"] = merged
+	}
+	if len(slugCandidates) > 0 {
+		mergeIntoPlaceholder(node, slugCandidates, "{id}")
+	}
+
+	// Pass 2: UUIDs → {id} when ≥2 distinct values seen
+	var uuidCandidates []string
+	for seg := range node.children {
+		if seg != "{id}" && seg != "{hash}" && looksLikeID(seg) {
+			uuidCandidates = append(uuidCandidates, seg)
 		}
+	}
+	if len(uuidCandidates) >= 2 {
+		mergeIntoPlaceholder(node, uuidCandidates, "{id}")
+	}
+}
+
+func mergeIntoPlaceholder(node *trieNode, candidates []string, placeholder string) {
+	merged := &trieNode{children: map[string]*trieNode{}}
+	for _, seg := range candidates {
+		mergeTrieNodes(merged, node.children[seg])
+		delete(node.children, seg)
+	}
+	if existing, ok := node.children[placeholder]; ok {
+		mergeTrieNodes(existing, merged)
+	} else {
+		node.children[placeholder] = merged
 	}
 }
 
@@ -190,18 +208,14 @@ func looksLikeID(s string) bool {
 	return reUUIDSeg.MatchString(s)
 }
 
-// looksLikeToken: auto-collapsed on first observation — unambiguously dynamic.
-// - Pure integers: no REST API has a static integer path segment
-// - Hex tokens ≥20 chars: SHA1/SHA256/MD5 hashes
-// - Long slugs ≥10 chars: opaque identifiers
-func looksLikeToken(s string) bool {
-	if reNumeric.MatchString(s) {
-		return true // integers are always dynamic IDs
-	}
-	if len(s) < 10 {
-		return false
-	}
-	return reHexToken.MatchString(s) || reSlug.MatchString(s)
+// looksLikeHexToken: SHA1/SHA256/MD5 hex strings ≥20 chars → collapses to {hash}.
+func looksLikeHexToken(s string) bool {
+	return len(s) >= 20 && reHexToken.MatchString(s)
+}
+
+// looksLikeSlug: long opaque slug ≥10 chars → collapses to {id}.
+func looksLikeSlug(s string) bool {
+	return len(s) >= 10 && reSlug.MatchString(s)
 }
 
 func buildTemplate(node *trieNode, segments []string) []string {
@@ -211,8 +225,15 @@ func buildTemplate(node *trieNode, segments []string) []string {
 	seg := segments[0]
 	rest := segments[1:]
 
+	// Hex token → {hash}
+	if _, ok := node.children["{hash}"]; ok {
+		if looksLikeHexToken(seg) {
+			return append([]string{"{hash}"}, buildTemplate(node.children["{hash}"], rest)...)
+		}
+	}
+	// Integer / UUID / slug → {id}
 	if _, ok := node.children["{id}"]; ok {
-		if looksLikeToken(seg) || looksLikeID(seg) {
+		if reNumeric.MatchString(seg) || looksLikeID(seg) || looksLikeSlug(seg) {
 			return append([]string{"{id}"}, buildTemplate(node.children["{id}"], rest)...)
 		}
 	}
