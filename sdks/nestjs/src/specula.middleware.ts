@@ -76,11 +76,32 @@ export class SpeculaMiddleware implements NestMiddleware {
           }
         }
 
+        // Build request body — for multipart, merge text fields with file
+        // field sentinels so the Go merger can document them as format:binary
+        let requestBody: string | undefined;
+        if (this.options.captureBodies) {
+          const ct = req.headers['content-type'] ?? '';
+          if (ct.includes('multipart/form-data')) {
+            const body: Record<string, unknown> = { ...originalBody };
+            const files = (req as any).files;
+            if (Array.isArray(files)) {
+              for (const f of files) body[f.fieldname] = '__file__';
+            } else if (files && typeof files === 'object') {
+              for (const k of Object.keys(files)) body[k] = '__file__';
+            }
+            const file = (req as any).file;
+            if (file?.fieldname) body[file.fieldname] = '__file__';
+            requestBody = JSON.stringify(body);
+          } else {
+            requestBody = JSON.stringify(originalBody);
+          }
+        }
+
         this.sendObservation({
           method: req.method,
           rawPath: routePath,
           queryParams: req.query as Record<string, string>,
-          requestBody: this.options.captureBodies ? JSON.stringify(originalBody) : undefined,
+          requestBody,
           statusCode: res.statusCode,
           responseBody,
           responseHeaders,

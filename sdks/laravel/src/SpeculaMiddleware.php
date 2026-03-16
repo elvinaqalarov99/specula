@@ -88,11 +88,14 @@ class SpeculaMiddleware
             return null;
         }
 
-        // Skip multipart — binary file data, not useful for schema inference
         $contentType = $request->header('Content-Type', '');
         if (str_contains($contentType, 'multipart/form-data')) {
-            // Still capture the non-file fields as JSON for schema inference
+            // Capture non-file fields normally; mark file fields with sentinel
+            // so the Go merger can document them as format: binary
             $fields = $request->except($this->fileFieldNames($request));
+            foreach ($this->fileFieldNames($request) as $name) {
+                $fields[$name] = '__file__';
+            }
             return empty($fields) ? null : json_encode($fields);
         }
 
