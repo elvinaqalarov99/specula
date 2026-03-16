@@ -65,6 +65,30 @@ func TestNormalizerURLEncodedPlaceholder(t *testing.T) {
 	}
 }
 
+func TestNormalizerKebabRouteSegmentsNotCollapsed(t *testing.T) {
+	// English kebab-case route words must never be collapsed to {id} —
+	// only opaque slugs that contain digits qualify.
+	cases := []string{
+		"/user/plans/apply-discount",
+		"/user/qr-codes/remove-folder",
+		"/user/qr-codes/bulk/move-to-folder",
+		"/user/billing/retry-charge",
+		"/user/billing/before-cancel",
+		"/user/billing/validate-postal-code",
+		"/user/auth/logout-all-devices",
+		"/user/auth/register-check",
+		"/user/auth/token-verify",
+		"/user/profile/banner-alerts",
+	}
+	for _, path := range cases {
+		n := NewPathNormalizer()
+		got := n.Observe(path)
+		if got != path {
+			t.Errorf("path %s was wrongly normalized to %s", path, got)
+		}
+	}
+}
+
 func TestNormalizerSHA1Token(t *testing.T) {
 	// Numeric user-ID → {id}, 40-char SHA1 hash → {hash}
 	n := NewPathNormalizer()

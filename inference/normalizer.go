@@ -206,9 +206,20 @@ func looksLikeHexToken(s string) bool {
 	return len(s) >= 20 && reHexToken.MatchString(s)
 }
 
-// looksLikeSlug: long opaque slug ≥10 chars → collapses to {id}.
+// looksLikeSlug: long opaque slug ≥10 chars that contains at least one digit → collapses to {id}.
+// Requiring a digit excludes readable kebab-case route segments like "remove-folder",
+// "apply-discount", "logout-all-devices" which are literal route words, not IDs.
+// Real opaque slugs (e.g. "a3f1c2d4e5b6") always have digits mixed in.
 func looksLikeSlug(s string) bool {
-	return len(s) >= 10 && reSlug.MatchString(s)
+	if len(s) < 10 || !reSlug.MatchString(s) {
+		return false
+	}
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			return true
+		}
+	}
+	return false
 }
 
 func buildTemplate(node *trieNode, segments []string) []string {

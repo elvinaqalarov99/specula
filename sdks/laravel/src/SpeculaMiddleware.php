@@ -160,29 +160,11 @@ class SpeculaMiddleware
 
     private function isApiResponse(SymfonyResponse $response): bool
     {
-        $status = $response->getStatusCode();
-
+        // Only skip HTML pages — everything else is an API endpoint worth documenting:
+        // JSON responses, file downloads (image/png, text/csv, etc.), empty-body 2xx,
+        // and redirects (302 with Location header) are all tracked.
         $ct = $response->headers->get('Content-Type', '');
-
-        // Skip HTML — definitely not an API endpoint
-        if (str_contains($ct, 'text/html')) {
-            return false;
-        }
-
-        // Explicit JSON content-type
-        if (str_contains($ct, 'application/json') || str_contains($ct, 'application/vnd.api+json')) {
-            return true;
-        }
-
-        // Sniff body shape — some apps forget to set Content-Type
-        $body = $response->getContent();
-        if (!empty($body)) {
-            $first = ltrim($body)[0] ?? '';
-            return $first === '{' || $first === '[';
-        }
-
-        // No body (e.g. 201 Created, 204 No Content) — still a valid API endpoint
-        return true;
+        return !str_contains($ct, 'text/html');
     }
 
     private function isWebhook(Request $request): bool

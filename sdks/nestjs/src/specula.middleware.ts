@@ -66,13 +66,23 @@ export class SpeculaMiddleware implements NestMiddleware {
         const location = res.getHeader('location');
         if (location) responseHeaders['Location'] = String(location);
 
+        // Only forward the response body if it's JSON — don't send binary file data
+        let responseBody: string | undefined;
+        if (this.options.captureBodies) {
+          const raw = Buffer.concat(chunks).toString('utf8');
+          const trimmed = raw.trimStart();
+          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            responseBody = raw;
+          }
+        }
+
         this.sendObservation({
           method: req.method,
           rawPath: routePath,
           queryParams: req.query as Record<string, string>,
           requestBody: this.options.captureBodies ? JSON.stringify(originalBody) : undefined,
           statusCode: res.statusCode,
-          responseBody: this.options.captureBodies ? Buffer.concat(chunks).toString('utf8') : undefined,
+          responseBody,
           responseHeaders,
           contentType: req.headers['content-type'] ?? '',
           durationMs: Date.now() - startedAt,
