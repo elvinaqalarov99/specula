@@ -10,15 +10,16 @@ import (
 
 // Observation is a single captured request/response pair
 type Observation struct {
-	Method         string
-	PathTemplate   string // normalized, e.g. /users/{id}
-	RawPath        string
-	QueryParams    map[string]string
-	RequestHeaders http.Header
-	RequestBody    []byte
-	StatusCode     int
-	ResponseBody   []byte
-	ContentType    string
+	Method          string
+	PathTemplate    string // normalized, e.g. /users/{id}
+	RawPath         string
+	QueryParams     map[string]string
+	RequestHeaders  http.Header
+	RequestBody     []byte
+	StatusCode      int
+	ResponseBody    []byte
+	ContentType     string
+	ResponseHeaders map[string]string // key response headers (Location, etc.)
 }
 
 // OpenAPISpec is the live-built specification
@@ -61,8 +62,14 @@ type RequestBody struct {
 }
 
 type Response struct {
-	Description string                    `json:"description"`
-	Content     map[string]MediaTypeEntry `json:"content,omitempty"`
+	Description string                      `json:"description"`
+	Headers     map[string]HeaderObject     `json:"headers,omitempty"`
+	Content     map[string]MediaTypeEntry   `json:"content,omitempty"`
+}
+
+type HeaderObject struct {
+	Description string          `json:"description,omitempty"`
+	Schema      *JSONSchemaType `json:"schema"`
 }
 
 type MediaTypeEntry struct {
@@ -157,6 +164,19 @@ func (m *SpecMerger) Ingest(obs *Observation) {
 		existing = Response{
 			Description: http.StatusText(obs.StatusCode),
 			Content:     map[string]MediaTypeEntry{},
+		}
+	}
+
+	// Redirect responses: document the Location header with its target template
+	if obs.StatusCode >= 300 && obs.StatusCode < 400 {
+		if location, ok := obs.ResponseHeaders["Location"]; ok && location != "" {
+			if existing.Headers == nil {
+				existing.Headers = map[string]HeaderObject{}
+			}
+			existing.Headers["Location"] = HeaderObject{
+				Description: "Redirect target",
+				Schema:      &JSONSchemaType{Type: "string", Example: location},
+			}
 		}
 	}
 

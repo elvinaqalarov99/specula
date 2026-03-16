@@ -87,13 +87,14 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Build and ingest observation asynchronously
 	obs := &inference.Observation{
-		Method:      r.Method,
-		RawPath:     r.URL.Path,
-		RequestBody: reqBody,
-		StatusCode:  resp.StatusCode,
-		ResponseBody: respBody,
-		ContentType: r.Header.Get("Content-Type"),
-		QueryParams: parseQueryParams(r.URL.RawQuery),
+		Method:          r.Method,
+		RawPath:         r.URL.Path,
+		RequestBody:     reqBody,
+		StatusCode:      resp.StatusCode,
+		ResponseBody:    respBody,
+		ContentType:     r.Header.Get("Content-Type"),
+		QueryParams:     parseQueryParams(r.URL.RawQuery),
+		ResponseHeaders: extractKeyHeaders(resp.Header),
 	}
 
 	go func() {
@@ -129,6 +130,14 @@ func singleJoiningSlash(a, b string) string {
 		return a + "/" + b
 	}
 	return a + b
+}
+
+func extractKeyHeaders(h http.Header) map[string]string {
+	out := map[string]string{}
+	if loc := h.Get("Location"); loc != "" {
+		out["Location"] = loc
+	}
+	return out
 }
 
 func parseQueryParams(raw string) map[string]string {

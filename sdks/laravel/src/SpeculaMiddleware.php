@@ -48,14 +48,15 @@ class SpeculaMiddleware
         }
 
         $this->sendObservation([
-            'method'       => $request->method(),
-            'rawPath'      => $this->routePath($request),
-            'queryParams'  => $this->sanitizeQueryParams($request->query()),
-            'requestBody'  => $this->captureRequestBody($request),
-            'statusCode'   => $response->getStatusCode(),
-            'responseBody' => $this->captureResponseBody($response),
-            'contentType'  => $request->header('Content-Type', ''),
-            'durationMs'   => $durationMs,
+            'method'          => $request->method(),
+            'rawPath'         => $this->routePath($request),
+            'queryParams'     => $this->sanitizeQueryParams($request->query()),
+            'requestBody'     => $this->captureRequestBody($request),
+            'statusCode'      => $response->getStatusCode(),
+            'responseBody'    => $this->captureResponseBody($response),
+            'responseHeaders' => $this->captureResponseHeaders($response),
+            'contentType'     => $request->header('Content-Type', ''),
+            'durationMs'      => $durationMs,
         ]);
 
         return $response;
@@ -146,14 +147,20 @@ class SpeculaMiddleware
         return '/' . $request->path();
     }
 
+    private function captureResponseHeaders(SymfonyResponse $response): array
+    {
+        $headers = [];
+        // Capture Location for redirects — documents where the endpoint redirects to
+        $location = $response->headers->get('Location');
+        if ($location !== null) {
+            $headers['Location'] = $location;
+        }
+        return $headers;
+    }
+
     private function isApiResponse(SymfonyResponse $response): bool
     {
         $status = $response->getStatusCode();
-
-        // Skip redirects — these are web routes, not API endpoints
-        if ($status >= 300 && $status < 400) {
-            return false;
-        }
 
         $ct = $response->headers->get('Content-Type', '');
 

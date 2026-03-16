@@ -48,12 +48,23 @@ export class SpeculaMiddleware implements NestMiddleware {
     res.end = (chunk: any, ...args: any[]) => {
       if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
 
+      // Skip HTML responses (web pages, not API endpoints)
+      const ct = res.getHeader('content-type') ?? '';
+      if (String(ct).includes('text/html')) {
+        return (originalEnd as any)(chunk, ...args);
+      }
+
       // Fire and forget — never slow down the response
       setImmediate(() => {
         // Use the matched route pattern (e.g. /login/auto/:id/:hash) and convert
         // Express :param syntax to OpenAPI {param} — gives real parameter names.
         const routePath = ((req as any).route?.path ?? req.path)
           .replace(/:([^/]+)/g, '{$1}');
+
+        // Capture Location header for redirect responses
+        const responseHeaders: Record<string, string> = {};
+        const location = res.getHeader('location');
+        if (location) responseHeaders['Location'] = String(location);
 
         this.sendObservation({
           method: req.method,
@@ -62,6 +73,7 @@ export class SpeculaMiddleware implements NestMiddleware {
           requestBody: this.options.captureBodies ? JSON.stringify(originalBody) : undefined,
           statusCode: res.statusCode,
           responseBody: this.options.captureBodies ? Buffer.concat(chunks).toString('utf8') : undefined,
+          responseHeaders,
           contentType: req.headers['content-type'] ?? '',
           durationMs: Date.now() - startedAt,
         });
@@ -80,6 +92,7 @@ export class SpeculaMiddleware implements NestMiddleware {
     requestBody?: string;
     statusCode: number;
     responseBody?: string;
+    responseHeaders?: Record<string, string>;
     contentType: string;
     durationMs: number;
   }): Promise<void> {

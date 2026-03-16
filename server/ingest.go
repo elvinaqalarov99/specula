@@ -10,14 +10,15 @@ import (
 
 // ingestPayload is the JSON body sent by SDK middlewares
 type ingestPayload struct {
-	Method       string            `json:"method"`
-	RawPath      string            `json:"rawPath"`
-	QueryParams  map[string]string `json:"queryParams"`
-	RequestBody  string            `json:"requestBody"`
-	StatusCode   int               `json:"statusCode"`
-	ResponseBody string            `json:"responseBody"`
-	ContentType  string            `json:"contentType"`
-	DurationMs   int               `json:"durationMs"`
+	Method          string            `json:"method"`
+	RawPath         string            `json:"rawPath"`
+	QueryParams     map[string]string `json:"queryParams"`
+	RequestBody     string            `json:"requestBody"`
+	StatusCode      int               `json:"statusCode"`
+	ResponseBody    string            `json:"responseBody"`
+	ResponseHeaders map[string]string `json:"responseHeaders"`
+	ContentType     string            `json:"contentType"`
+	DurationMs      int               `json:"durationMs"`
 }
 
 func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
@@ -39,13 +40,14 @@ func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	obs := &inference.Observation{
-		Method:       p.Method,
-		RawPath:      p.RawPath,
-		QueryParams:  p.QueryParams,
-		RequestBody:  []byte(p.RequestBody),
-		StatusCode:   p.StatusCode,
-		ResponseBody: []byte(p.ResponseBody),
-		ContentType:  p.ContentType,
+		Method:          p.Method,
+		RawPath:         p.RawPath,
+		QueryParams:     p.QueryParams,
+		RequestBody:     []byte(p.RequestBody),
+		StatusCode:      p.StatusCode,
+		ResponseBody:    []byte(p.ResponseBody),
+		ResponseHeaders: p.ResponseHeaders,
+		ContentType:     p.ContentType,
 	}
 
 	s.merger.Ingest(obs)
