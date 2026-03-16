@@ -49,7 +49,7 @@ class SpeculaMiddleware
 
         $this->sendObservation([
             'method'       => $request->method(),
-            'rawPath'      => '/' . $request->path(),
+            'rawPath'      => $this->routePath($request),
             'queryParams'  => $this->sanitizeQueryParams($request->query()),
             'requestBody'  => $this->captureRequestBody($request),
             'statusCode'   => $response->getStatusCode(),
@@ -131,6 +131,20 @@ class SpeculaMiddleware
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Returns the route template with real parameter names, e.g. /users/{id}/posts/{postId}.
+     * Falls back to the actual request path if no route is matched.
+     */
+    private function routePath(Request $request): string
+    {
+        $route = $request->route();
+        if ($route) {
+            // $route->uri() returns e.g. "v1/user/auth/login/auto/{id}/{hash}"
+            return '/' . $route->uri();
+        }
+        return '/' . $request->path();
+    }
 
     private function isJsonResponse(SymfonyResponse $response): bool
     {

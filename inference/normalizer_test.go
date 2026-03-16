@@ -57,10 +57,11 @@ func TestNormalizerSkipsNull(t *testing.T) {
 
 func TestNormalizerURLEncodedPlaceholder(t *testing.T) {
 	n := NewPathNormalizer()
-	// %7Buuid%7D decodes to {uuid} — client sent template literal
+	// %7Buuid%7D decodes to {uuid} — client sent template literal or middleware
+	// sent the route template. The original name is preserved.
 	got := n.Observe("/plans/%7Buuid%7D/summary")
-	if got != "/plans/{id}/summary" {
-		t.Errorf("expected /plans/{id}/summary, got %s", got)
+	if got != "/plans/{uuid}/summary" {
+		t.Errorf("expected /plans/{uuid}/summary, got %s", got)
 	}
 }
 

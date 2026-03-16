@@ -50,9 +50,14 @@ export class SpeculaMiddleware implements NestMiddleware {
 
       // Fire and forget — never slow down the response
       setImmediate(() => {
+        // Use the matched route pattern (e.g. /login/auto/:id/:hash) and convert
+        // Express :param syntax to OpenAPI {param} — gives real parameter names.
+        const routePath = ((req as any).route?.path ?? req.path)
+          .replace(/:([^/]+)/g, '{$1}');
+
         this.sendObservation({
           method: req.method,
-          rawPath: req.path,
+          rawPath: routePath,
           queryParams: req.query as Record<string, string>,
           requestBody: this.options.captureBodies ? JSON.stringify(originalBody) : undefined,
           statusCode: res.statusCode,

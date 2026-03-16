@@ -59,19 +59,12 @@ func (n *PathNormalizer) Observe(rawPath string) string {
 		if badSegments[strings.ToLower(seg)] {
 			return ""
 		}
-		// Skip paths where a segment is literally a template placeholder
-		// e.g. {uuid} was left unresolved by the client
+		// Path already contains a placeholder — either sent by the SDK middleware
+		// (real route template with correct param names like {id}, {hash})
+		// or a URL-encoded literal like %7Buuid%7D the client forgot to replace.
+		// Either way, return the path as-is: the names are already correct.
 		if strings.HasPrefix(seg, "{") && strings.HasSuffix(seg, "}") {
-			// Replace it with {id} and return immediately — no need to record
-			normalized := make([]string, len(segments))
-			for i, s := range segments {
-				if strings.HasPrefix(s, "{") && strings.HasSuffix(s, "}") {
-					normalized[i] = "{id}"
-				} else {
-					normalized[i] = s
-				}
-			}
-			return "/" + strings.Join(normalized, "/")
+			return "/" + strings.Join(segments, "/")
 		}
 	}
 
