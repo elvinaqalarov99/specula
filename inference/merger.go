@@ -240,6 +240,9 @@ func buildOperationID(method, path string) string {
 	parts := strings.Split(strings.Trim(path, "/"), "/")
 	out := method
 	for _, p := range parts {
+		if p == "" || isVersionSegment(p) {
+			continue
+		}
 		if strings.HasPrefix(p, "{") {
 			out += "By" + strings.Title(strings.Trim(p, "{}"))
 		} else {
@@ -282,14 +285,28 @@ func mergeQueryParam(op *Operation, name, value string) {
 	})
 }
 
+// isVersionSegment returns true for path prefix segments that are not
+// meaningful resource names: v1, v2, v1.0, api, etc.
+func isVersionSegment(s string) bool {
+	if s == "api" {
+		return true
+	}
+	if len(s) >= 2 && s[0] == 'v' {
+		for _, c := range s[1:] {
+			if (c < '0' || c > '9') && c != '.' {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
 func inferTags(path string) []string {
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	for i, p := range parts {
-		if p == "" {
+	for _, p := range strings.Split(strings.Trim(path, "/"), "/") {
+		if p == "" || strings.HasPrefix(p, "{") || isVersionSegment(p) {
 			continue
 		}
-		// First meaningful segment becomes the tag
-		_ = i
 		return []string{strings.ReplaceAll(p, "-", "_")}
 	}
 	return []string{"default"}
